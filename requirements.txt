@@ -7,9 +7,6 @@ joblib
 xgboost
 librosa
 python-multipart
-spotipy
-captum
-shap
 python-dotenv
 yt-dlp
 imageio-ffmpeg
