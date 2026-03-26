@@ -5,20 +5,12 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "website/frontend/dist" }
-    },
-    {
-      "src": "website/backend/main.py",
-      "use": "@vercel/python"
     }
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "website/backend/main.py"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/website/frontend/dist/$1"
+      "destination": "website/frontend/dist/$1"
     }
   ]
 }
