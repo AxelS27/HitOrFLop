@@ -1,4 +1,3 @@
-import React from 'react';
 
 const ResultDisplay = ({ data, onReset }: any) => {
   if (!data) return null;
