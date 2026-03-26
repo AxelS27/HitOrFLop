@@ -1,0 +1,20 @@
+# Git Ignore
+.venv/
+venv/
+**/venv/
+**/__pycache__/
+*.pkl
+*.dll
+*.exe
+*.so
+*.dylib
+.env
+.DS_Store
+dist/
+build/
+node_modules/
+website/frontend/dist/
+website/backend/venv/
+website/backend/__pycache__/
+model_training/venv/
+model_training/__pycache__/

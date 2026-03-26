@@ -1,0 +1,134 @@
+import { useState } from 'react';
+
+const PredictorForm = ({ onStart, onResult }: any) => {
+  const [model, setModel] = useState('SVM');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handlePredict = async () => {
+    onStart();
+    
+    const formData = new FormData();
+    formData.append('model_name', model);
+    if (file) {
+      formData.append('file', file);
+    } else if (isLinkValid) {
+      formData.append('youtube_url', youtubeUrl);
+    }
+
+    try {
+      const response = await fetch('/api/predict', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Prediction failed');
+      }
+      
+      const resultData = await response.json();
+      onResult(resultData);
+    } catch (err: any) {
+      console.error(err);
+      alert(`Backend Error: ${err.message}\n\nFalling back to Demo Mode for visualization.`);
+      
+      onResult({
+        isHit: true,
+        model: `${model} (Demo Mode)`,
+        probability: 92.4,
+        analysis: [
+          { feature: 'Energy', value: '0.82', impact: 'High energy characteristic' },
+          { feature: 'Tempo', value: '121 BPM', impact: 'Strong rhythm presence' },
+          { feature: 'Confidence', value: '88%', impact: 'Model certainty' }
+        ]
+      });
+    }
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile && (droppedFile.name.endsWith('.mp3') || droppedFile.name.endsWith('.wav'))) {
+      setFile(droppedFile);
+    }
+  };
+
+  const isLinkValid = youtubeUrl.trim().includes('youtube.com/') || youtubeUrl.trim().includes('youtu.be/');
+  const isFileValid = file !== null && (file.name.endsWith('.mp3') || file.name.endsWith('.wav'));
+  const canAnalyze = isFileValid || isLinkValid;
+
+  return (
+    <div className="glass-panel" style={{ alignSelf: 'center', marginTop: '2rem' }}>
+      <div className="input-group">
+        <label className="input-label">1. Choose AI Model</label>
+        <select 
+          className="brand-input" 
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+        >
+          <option>SVM (Best Performance)</option>
+          <option>Logistic Regression</option>
+          <option>Random Forest</option>
+          <option>XGBoost</option>
+          <option>KNN</option>
+        </select>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 0.1fr 1fr', gap: '1rem', alignItems: 'center' }}>
+        <div className="input-group">
+          <label className="input-label">2a. Upload MP3/WAV</label>
+          <div 
+            className={`file-upload-area ${isDragging ? 'dragging' : ''}`}
+            onClick={() => document.getElementById('audio-up')?.click()}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+          >
+            <input 
+              id="audio-up" 
+              type="file" 
+              hidden 
+              accept=".mp3,.wav" 
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+            />
+            {file ? <div style={{ color: 'var(--brand-green)' }}>{file.name}</div> : <div style={{ color: 'white' }}>Drag or click to browse</div>}
+            <div style={{ fontSize: '0.7rem', color: '#b3b3b3', marginTop: '0.5rem' }}>MAX 10MB</div>
+          </div>
+        </div>
+
+        <div style={{ color: '#b3b3b3', fontStyle: 'italic', fontSize: '0.8rem' }}>OR</div>
+
+        <div className="input-group">
+          <label className="input-label">2b. Paste YouTube Link</label>
+          <input 
+            className="brand-input" 
+            placeholder="youtube.com/watch?v=..."
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+          />
+          <div style={{ fontSize: '0.7rem', color: '#b3b3b3', marginTop: '0.5rem' }}>INSTANT YOUTUBE ANALYSIS</div>
+        </div>
+      </div>
+
+      {canAnalyze && (
+        <button className="btn-primary" onClick={handlePredict} style={{ marginTop: '2.5rem', width: '100%', animation: 'slideUp 0.4s ease-out' }}>
+          ANALYZE THIS TRACK
+        </button>
+      )}
+    </div>
+  );
+};
+
+export default PredictorForm;
