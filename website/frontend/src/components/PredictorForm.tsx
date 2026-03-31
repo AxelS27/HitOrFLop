@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 const PredictorForm = ({ onStart, onResult }: any) => {
-  const [model, setModel] = useState('SVM');
+  const [model, setModel] = useState('Multi-Vote Model');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -78,11 +78,12 @@ const PredictorForm = ({ onStart, onResult }: any) => {
           value={model}
           onChange={(e) => setModel(e.target.value)}
         >
-          <option>SVM (Best Performance)</option>
-          <option>Logistic Regression</option>
-          <option>Random Forest</option>
-          <option>XGBoost</option>
-          <option>KNN</option>
+          <option value="Multi-Vote Model">Multi-Vote Model (Exclusive 🔥)</option>
+          <option value="XGBoost">XGBoost (High Accuracy)</option>
+          <option value="Random Forest">Random Forest</option>
+          <option value="AdaBoost">AdaBoost</option>
+          <option value="KNN">KNN</option>
+          <option value="Decision Tree">Decision Tree</option>
         </select>
       </div>
 

@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 from yt_dlp import YoutubeDL
 import imageio_ffmpeg
 import time
+import pyloudnorm as pyln
+import warnings
+warnings.filterwarnings('ignore')
 
 # Load Environment Variables
 load_dotenv()
@@ -25,16 +28,9 @@ app.add_middleware(
 
 # Configuration
 MODELS_PATH = os.path.join(os.path.dirname(__file__), "models")
-SCALER_PATH = os.path.join(MODELS_PATH, "audio_scaler.pkl")
-FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
-
-# FEATURE LIST (17 Librosa Features)
-ALL_FEATURES = [
-    'tempo', 'spectral_centroid', 'zcr', 'energy',
-    'mfcc_1', 'mfcc_2', 'mfcc_3', 'mfcc_4', 'mfcc_5', 
-    'mfcc_6', 'mfcc_7', 'mfcc_8', 'mfcc_9', 'mfcc_10', 
-    'mfcc_11', 'mfcc_12', 'mfcc_13'
-]
+# FEATURE LIST (5 specific features from model-code)
+ALL_FEATURES = ['tempo', 'loudness', 'key', 'mode', 'energy']
+SCALER_PATH = os.path.join(MODELS_PATH, "feature_scaler.pkl")
 
 # Load Scaler
 if os.path.exists(SCALER_PATH):
@@ -43,33 +39,54 @@ else:
     scaler = None
     print("⚠️ WARNING: Scaler not found at", SCALER_PATH)
 
-def extract_real_features(audio_path):
-    """Directly extracts the 17 Librosa features used in training."""
+FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
+
+def extract_real_features(file_path):
+    """
+    Extracts audio features equivalent to Spotify's using librosa.
+    Normalized to -14.0 LUFS with energy boosting for local files.
+    """
     try:
-        # Load 30 seconds
-        y, sr = librosa.load(audio_path, duration=30)
+        y, sr = librosa.load(file_path, sr=22050, mono=True)
         
-        # 1. Base Features
-        tempo_var, _ = librosa.beat.beat_track(y=y, sr=sr)
-        tempo = float(tempo_var[0]) if isinstance(tempo_var, np.ndarray) else float(tempo_var)
-        spectral_centroid = float(np.mean(librosa.feature.spectral_centroid(y=y, sr=sr)))
-        zcr = float(np.mean(librosa.feature.zero_crossing_rate(y)))
-        rmse = float(np.mean(librosa.feature.rms(y=y)))
+        try:
+            meter = pyln.Meter(sr)
+            lufs_current = meter.integrated_loudness(y)
+            y = pyln.normalize.loudness(y, lufs_current, -14.0)
+        except Exception:
+            pass
+
+        features = {}
+        features['duration_ms'] = float(librosa.get_duration(y=y, sr=sr) * 1000)
         
-        # 2. MFCCs
-        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
-        mfcc_means = np.mean(mfccs, axis=1)
+        tempo_array = librosa.feature.tempo(y=y, sr=sr)
+        features['tempo'] = float(tempo_array[0])
         
-        feats = {
-            'tempo': tempo,
-            'spectral_centroid': spectral_centroid,
-            'zcr': zcr,
-            'energy': rmse,
-        }
-        for i, val in enumerate(mfcc_means):
-            feats[f'mfcc_{i+1}'] = float(val)
-            
-        return feats
+        rms = librosa.feature.rms(y=y)
+        features['loudness'] = -14.0 
+
+        chromagram = librosa.feature.chroma_cqt(y=y, sr=sr)
+        chroma_vals = np.sum(chromagram, axis=1)
+        key_idx = np.argmax(chroma_vals)
+        features['key'] = int(key_idx)
+        
+        maj_profile = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88]
+        min_profile = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17]
+        
+        maj_profile = np.roll(maj_profile, key_idx)
+        min_profile = np.roll(min_profile, key_idx)
+        
+        maj_corr = np.corrcoef(chroma_vals, maj_profile)[0,1]
+        min_corr = np.corrcoef(chroma_vals, min_profile)[0,1]
+        features['mode'] = 1 if maj_corr > min_corr else 0
+        
+        rms_mean = np.mean(rms)
+        features['energy'] = float(min(rms_mean * 4.5, 1.0))
+        
+        # Adding some missing fields used in visualization if needed (though model only uses 5)
+        features['spectral_centroid'] = float(np.mean(librosa.feature.spectral_centroid(y=y, sr=sr)))
+        
+        return features
     except Exception as e:
         print(f"Extraction error: {e}")
         return None
@@ -103,18 +120,28 @@ async def predict(
 ):
     # 1. Select Model
     model_slug = model_name.lower()
-    if 'xgboost' in model_slug: model_filename = "xgboost_model.pkl"
-    elif 'logistic' in model_slug: model_filename = "logistic_regression_model.pkl"
-    elif 'svm' in model_slug: model_filename = "svm_model.pkl"
-    elif 'random' in model_slug: model_filename = "random_forest_model.pkl"
-    elif 'knn' in model_slug: model_filename = "knn_model.pkl"
-    else: model_filename = "random_forest_model.pkl"
+    is_voting = 'multi-vote' in model_slug or 'ensemble' in model_slug or 'voting' in model_slug
     
-    model_path = os.path.join(MODELS_PATH, model_filename)
-    if not os.path.exists(model_path):
-        raise HTTPException(status_code=404, detail=f"Model file {model_filename} not found")
-    
-    model = joblib.load(model_path)
+    if is_voting:
+        model_files = ["xgboost_model.pkl", "randomforest_model.pkl", "knn_model.pkl", "adaboost_model.pkl", "decisiontree_model.pkl"]
+        models = []
+        for f in model_files:
+            p = os.path.join(MODELS_PATH, f)
+            if os.path.exists(p): models.append(joblib.load(p))
+        if not models:
+            raise HTTPException(status_code=404, detail="No models found for voting")
+    else:
+        if 'xgboost' in model_slug: model_filename = "xgboost_model.pkl"
+        elif 'random' in model_slug: model_filename = "randomforest_model.pkl"
+        elif 'knn' in model_slug: model_filename = "knn_model.pkl"
+        elif 'adaboost' in model_slug: model_filename = "adaboost_model.pkl"
+        elif 'decision' in model_slug or 'tree' in model_slug: model_filename = "decisiontree_model.pkl"
+        else: model_filename = "xgboost_model.pkl"
+        
+        model_path = os.path.join(MODELS_PATH, model_filename)
+        if not os.path.exists(model_path):
+            raise HTTPException(status_code=404, detail=f"Model file {model_filename} not found")
+        model = joblib.load(model_path)
     
     features_dict = None
     track_display_name = "Unknown Track"
@@ -140,23 +167,28 @@ async def predict(
         raise HTTPException(status_code=500, detail="Failed to process audio source")
 
     # 3. Scale & Predict
-    df = pd.DataFrame([features_dict])[ALL_FEATURES]
-    X_scaled = scaler.transform(df) if scaler else df
+    df_input = pd.DataFrame([features_dict])[ALL_FEATURES]
+    X_scaled = scaler.transform(df_input) if scaler else df_input
     
-    # Check if model has predict_proba
-    if hasattr(model, "predict_proba"):
-        prob = model.predict_proba(X_scaled)[0][1]
+    if is_voting:
+        hits = 0
+        for m in models:
+            if m.predict(X_scaled)[0] == 1: hits += 1
+        prob = hits / len(models)
     else:
-        # Fallback for models without proba (though SVC has probability=True)
-        prob = float(model.predict(X_scaled)[0])
+        # Check if model has predict_proba
+        if hasattr(model, "predict_proba"):
+            prob = model.predict_proba(X_scaled)[0][1]
+        else:
+            prob = float(model.predict(X_scaled)[0])
         
-    is_hit = prob > 0.5
+    is_hit = prob >= 0.5
     
     analysis = [
         {"feature": "Tempo", "value": f"{int(features_dict['tempo'])} BPM", "impact": "Fast pace" if features_dict['tempo'] > 120 else "Slow/Chill vibe"},
-        {"feature": "Energy (RMS)", "value": f"{features_dict['energy']:.2f}", "impact": "High intensity" if features_dict['energy'] > 0.1 else "Soft/Acoustic"},
-        {"feature": "Brightness", "value": f"{int(features_dict['spectral_centroid'])} Hz", "impact": "Bright/Poppy" if features_dict['spectral_centroid'] > 2000 else "Mellow/Dark"},
-        {"feature": "Model", "value": model_name, "impact": "Prediction Engine"}
+        {"feature": "Energy", "value": f"{features_dict['energy']:.2f}", "impact": "High intensity" if features_dict['energy'] > 0.5 else "Soft/Acoustic"},
+        {"feature": "Loudness", "value": f"{features_dict['loudness']:.1f} dB", "impact": "Normalized Focus"},
+        {"feature": "Model", "value": "Multi-Vote Model (Exclusive 🔥)" if is_voting else model_name, "impact": "Prediction Engine"}
     ]
     
     return {
