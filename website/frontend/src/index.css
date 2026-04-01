@@ -572,3 +572,30 @@ nav .container {
   color: white;
   background: rgba(29, 185, 84, 0.1);
 }
+
+.feature-item-glow:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(29, 185, 84, 0.3) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.6; transform: scale(0.98); }
+}
