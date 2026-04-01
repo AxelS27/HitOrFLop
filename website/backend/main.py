@@ -14,7 +14,7 @@ import pyloudnorm as pyln
 import warnings
 warnings.filterwarnings('ignore')
 
-# Load Environment Variables
+# --- ENVIRONMENT & CORE CONFIGURATION ---
 load_dotenv()
 
 app = FastAPI(title="Music Hit Predictor API (YouTube Engine)")
@@ -26,13 +26,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuration
 MODELS_PATH = os.path.join(os.path.dirname(__file__), "models")
-# FEATURE LIST (5 specific features from model-code)
 ALL_FEATURES = ['tempo', 'loudness', 'key', 'mode', 'energy']
 SCALER_PATH = os.path.join(MODELS_PATH, "feature_scaler.pkl")
 
-# Load Scaler
 if os.path.exists(SCALER_PATH):
     scaler = joblib.load(SCALER_PATH)
 else:
@@ -41,10 +38,11 @@ else:
 
 FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 
+# --- AUDIO FEATURE EXTRACTION ENGINE ---
 def extract_real_features(file_path):
     """
     Extracts audio features equivalent to Spotify's using librosa.
-    Normalized to -14.0 LUFS with energy boosting for local files.
+    Normalized to -14.0 LUFS for consistency.
     """
     try:
         y, sr = librosa.load(file_path, sr=22050, mono=True)
@@ -83,7 +81,6 @@ def extract_real_features(file_path):
         rms_mean = np.mean(rms)
         features['energy'] = float(min(rms_mean * 4.5, 1.0))
         
-        # Adding some missing fields used in visualization if needed (though model only uses 5)
         features['spectral_centroid'] = float(np.mean(librosa.feature.spectral_centroid(y=y, sr=sr)))
         
         return features
@@ -91,8 +88,9 @@ def extract_real_features(file_path):
         print(f"Extraction error: {e}")
         return None
 
+# --- YOUTUBE SOURCE INTEGRATION LAYER ---
 def get_audio_from_youtube(url_or_query):
-    """Downloads audio from YouTube and returns metadata + path."""
+    """Downloads audio from YouTube source and returns metadata/path references."""
     out_filename = os.path.join(tempfile.gettempdir(), f"yt_{int(time.time())}")
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -112,16 +110,17 @@ def get_audio_from_youtube(url_or_query):
             print(f"YouTube Error: {e}")
             return None
 
+# --- CORE PREDICTION ENDPOINT ---
 @app.post("/predict")
 async def predict(
     model_name: str = Form(...),
     file: UploadFile = File(None),
     youtube_url: str = Form(None)
 ):
-    # 1. Select Model
     model_slug = model_name.lower()
     is_voting = 'multi-vote' in model_slug or 'ensemble' in model_slug or 'voting' in model_slug
     
+    # Model Registry Selection
     if is_voting:
         model_files = ["xgboost_model.pkl", "randomforest_model.pkl", "knn_model.pkl", "adaboost_model.pkl", "decisiontree_model.pkl"]
         models = []
@@ -146,7 +145,7 @@ async def predict(
     features_dict = None
     track_display_name = "Unknown Track"
 
-    # 2. Extract Data
+    # Data Source Handling
     if file:
         with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as tmp:
             tmp.write(await file.read())
@@ -166,7 +165,7 @@ async def predict(
     if not features_dict:
         raise HTTPException(status_code=500, detail="Failed to process audio source")
 
-    # 3. Scale & Predict
+    # ML Inference Pipeline
     df_input = pd.DataFrame([features_dict])[ALL_FEATURES]
     X_scaled = scaler.transform(df_input) if scaler else df_input
     
@@ -176,7 +175,6 @@ async def predict(
             if m.predict(X_scaled)[0] == 1: hits += 1
         prob = hits / len(models)
     else:
-        # Check if model has predict_proba
         if hasattr(model, "predict_proba"):
             prob = model.predict_proba(X_scaled)[0][1]
         else:
@@ -184,11 +182,25 @@ async def predict(
         
     is_hit = prob >= 0.5
     
+    # --- AI REASONING GENERATION ---
+    reasoning_parts = []
+    if is_hit:
+        reasoning_parts.append(f"Music with {int(features_dict['tempo'])} BPM and {features_dict['energy']:.2f} energy tends to perform well in current charts.")
+        if features_dict['energy'] > 0.6: reasoning_parts.append("The high energy levels suggest this track is very engaging.")
+        if features_dict['mode'] == 1: reasoning_parts.append("The major scale (Mode) adds a positive, hit-friendly vibe.")
+    else:
+        reasoning_parts.append("This track has a unique profile that might be more suitable for niche audiences rather than mainstream hits.")
+        if features_dict['energy'] < 0.4: reasoning_parts.append("The lower energy levels might make it less 'catchy' for radios.")
+    
+    ai_reasoning = " ".join(reasoning_parts)
+
     analysis = [
         {"feature": "Tempo", "value": f"{int(features_dict['tempo'])} BPM", "impact": "Fast pace" if features_dict['tempo'] > 120 else "Slow/Chill vibe"},
         {"feature": "Energy", "value": f"{features_dict['energy']:.2f}", "impact": "High intensity" if features_dict['energy'] > 0.5 else "Soft/Acoustic"},
-        {"feature": "Loudness", "value": f"{features_dict['loudness']:.1f} dB", "impact": "Normalized Focus"},
-        {"feature": "Model", "value": "Multi-Vote Model (Exclusive 🔥)" if is_voting else model_name, "impact": "Prediction Engine"}
+        {"feature": "Key", "value": ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"][int(features_dict['key'])], "impact": "Tonality"},
+        {"feature": "Mode", "value": "Major" if features_dict['mode'] == 1 else "Minor", "impact": "Mood"},
+        {"feature": "Duration", "value": f"{int(features_dict['duration_ms']/1000)}s", "impact": "Standard length" if 150 < features_dict['duration_ms']/1000 < 240 else "Unique length"},
+        {"feature": "Model", "value": "Multi-Vote Model (XGBoost Ensemble)" if is_voting else model_name, "impact": "Prediction Engine"}
     ]
     
     return {
@@ -197,9 +209,11 @@ async def predict(
         "trackName": track_display_name,
         "model": model_name,
         "features": features_dict,
-        "analysis": analysis
+        "analysis": analysis,
+        "reasoning": ai_reasoning
     }
 
+# --- SERVER STARTUP ---
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

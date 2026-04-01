@@ -3,17 +3,60 @@ import Navbar from './components/Navbar.tsx';
 import Hero from './components/Hero.tsx';
 import ModelsPage from './components/ModelsPage.tsx';
 import AboutPage from './components/AboutPage.tsx';
+import DNAVisualizer from './components/DNAVisualizer.tsx';
 import Footer from './components/Footer.tsx';
+import bgVideo from './assets/background_video.mp4';
 
 const App = () => {
+  /* --- GLOBAL STATE MANAGEMENT --- */
   const [activePage, setActivePage] = useState('home');
-  const [prediction, setPrediction] = useState<any>(null);
+  const [prediction, setPrediction] = useState<any>(() => {
+    const saved = localStorage.getItem('last_prediction');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [factIndex, setFactIndex] = useState(0);
   const [sortKey, setSortKey] = useState('accuracy');
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [visitedPages, setVisitedPages] = useState<Record<string, boolean>>({});
+  const [isDnaOpen, setIsDnaOpen] = useState(false);
+
+  /* --- TECHNICAL PROTOCOLS (LOADING FACTS) --- */
+  const facts = [
+    "Analyzing 13 acoustic dimensions including spectral energy...",
+    "Processing audio samples at 22,050Hz for peak precision...",
+    "Benchmarking results across 6 distinct ML algorithms...",
+    "Performing Multi-Vote Ensemble check for final consensus...",
+    "Comparing frequency patterns with 52,616 balanced samples...",
+    "Validating SHAP values for explainable AI reasoning..."
+  ];
+
+  /* --- CORE EFFECT HOOKS --- */
+  useEffect(() => {
+    let interval: any;
+    let progressInterval: any;
+
+    if (loading) {
+      interval = setInterval(() => {
+        setFactIndex((prev) => (prev + 1) % facts.length);
+      }, 2500);
+
+      progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 92) return prev;
+          return prev + 0.15; 
+        });
+      }, 50);
+    }
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(progressInterval);
+    };
+  }, [loading]);
 
   useEffect(() => {
-    // Initial page load delay to trigger first animation
     const timer = setTimeout(() => {
       setVisitedPages(prev => ({ ...prev, [activePage]: true }));
     }, 1000);
@@ -29,8 +72,9 @@ const App = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       clearTimeout(timer);
     };
-  }, []);
+  }, [activePage]);
 
+  /* --- EVENT HANDLERS --- */
   const handlePageChange = (page: string) => {
     setActivePage(page);
     if (!visitedPages[page]) {
@@ -40,17 +84,43 @@ const App = () => {
     }
   };
 
+  const updatePrediction = (res: any) => {
+    if (res) {
+      setProgress(100);
+      setTimeout(() => {
+        setPrediction(res);
+        setLoading(false);
+        localStorage.setItem('last_prediction', JSON.stringify(res));
+      }, 600);
+    } else {
+      setPrediction(null);
+      setProgress(0);
+      setFactIndex(0);
+      localStorage.removeItem('last_prediction');
+    }
+  };
+
+  /* --- UI MODULES --- */
   const tickerItems = [
     'HIT OR FLOP? PREDICTION ENGINE',
-    '84.5% MULTI-VOTE ACCURACY',
+    '84.5% MULTI VOTE ACCURACY',
     'MUSIC SUCCESS BENCHMARKING',
-    'REAL-TIME AUDIO ANALYSIS',
+    'REAL TIME AUDIO ANALYSIS',
     'SHAP EXPLAINABILITY ACTIVE',
-    'TRADITIONAL ML BENCHMARKS'
+    'TRADITIONAL ML BENCHMARKS',
+    'GROUP 3 PROJECT'
   ];
 
+  const themeColor = prediction ? (prediction.isHit ? '#1db954' : '#ff4444') : '#1db954';
+  const themeColorFaded = prediction ? (prediction.isHit ? 'rgba(29, 185, 84, 0.15)' : 'rgba(255, 68, 68, 0.25)') : 'rgba(29, 185, 84, 0.15)';
+
+  /* --- RENDER LOGIC --- */
   return (
-    <div className="App" style={{ perspective: '1000px' }}>
+    <div className="App" style={{ 
+      perspective: '1000px',
+      '--theme-color': themeColor,
+      '--theme-color-faded': themeColorFaded
+    } as React.CSSProperties}>
       <div className="bg-container" style={{
         transform: `translate3d(${mousePos.x * -1.5}px, ${mousePos.y * -1.5}px, 0)`
       }}>
@@ -61,7 +131,7 @@ const App = () => {
           loop 
           poster="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
         >
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-spinning-vinyl-record-on-a-player-35105-large.mp4" type="video/mp4" />
+          <source src={bgVideo} type="video/mp4" />
         </video>
         <div className="bg-overlay"></div>
         <div className="ambient-glow" style={{ 
@@ -85,8 +155,14 @@ const App = () => {
               {activePage === 'home' && (
                 <Hero 
                   prediction={prediction} 
-                  setPrediction={setPrediction} 
+                  setPrediction={updatePrediction} 
+                  loading={loading}
+                  setLoading={setLoading}
+                  progress={progress}
+                  factIndex={factIndex}
+                  facts={facts}
                   isFirstTime={!visitedPages['home']}
+                  onDnaClick={() => setIsDnaOpen(true)}
                 />
               )}
               {activePage === 'models' && (
@@ -118,6 +194,8 @@ const App = () => {
 
         <Footer />
       </div>
+
+      <DNAVisualizer isOpen={isDnaOpen} onClose={() => setIsDnaOpen(false)} prediction={prediction} />
     </div>
   );
 };
