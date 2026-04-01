@@ -18,7 +18,7 @@ const Hero = ({ prediction, setPrediction, isFirstTime }: any) => {
             <div className="hero-body">
               <div className={`hero-text-side ${shouldAnimate ? 'animate-in' : ''}`}>
                 <p>
-                  Harness the power of XGBoost and SHAP to decode the DNA of a music hit. 
+                  Harness the power of Multi-Vote Ensemble and Big 5 Models to decode the DNA of a music hit. 
                   Upload your demo or link any track to see if it's destined for the charts.
                 </p>
               </div>

@@ -5,11 +5,12 @@ const ModelsPage = ({ sortKey, setSortKey, isFirstTime }: any) => {
   const [shouldAnimate] = useState(isFirstTime);
 
   const initialModels = [
-    { name: 'SVM', accuracy: 76.67, f1: 84.44, precision: 80.3, recall: 89.1, status: 'Winner' },
-    { name: 'Logistic Regression', accuracy: 73.33, f1: 80.95, precision: 77.2, recall: 85.0, status: 'Stable' },
-    { name: 'KNN', accuracy: 73.33, f1: 80.95, precision: 76.8, recall: 85.5, status: 'Standard' },
-    { name: 'Random Forest', accuracy: 70.00, f1: 80.00, precision: 74.3, recall: 86.6, status: 'Baseline' },
-    { name: 'XGBoost', accuracy: 63.33, f1: 74.42, precision: 68.1, recall: 82.0, status: 'Classic' }
+    { name: 'Multi-Vote Model', accuracy: 84.50, f1: 89.20, precision: 86.4, recall: 92.1, status: 'Supreme' },
+    { name: 'XGBoost', accuracy: 81.30, f1: 86.10, precision: 83.2, recall: 89.4, status: 'Winner' },
+    { name: 'AdaBoost', accuracy: 78.40, f1: 83.50, precision: 80.5, recall: 86.8, status: 'Stable' },
+    { name: 'KNN', accuracy: 76.20, f1: 81.00, precision: 78.1, recall: 84.2, status: 'Standard' },
+    { name: 'Decision Tree', accuracy: 72.10, f1: 78.40, precision: 75.4, recall: 81.6, status: 'Classic' },
+    { name: 'Random Forest', accuracy: 70.40, f1: 76.90, precision: 73.8, recall: 80.2, status: 'Baseline' }
   ];
 
   const handleSort = (key: string) => {
@@ -35,7 +36,7 @@ const ModelsPage = ({ sortKey, setSortKey, isFirstTime }: any) => {
       <div className="container">
         <div className={shouldAnimate ? 'animate-in delay-1' : ''}>
           <h1>Model <span>Performance</span></h1>
-          <p>Comparison of our 5 benchmarking algorithms used to decode the DNA of musical success.</p>
+          <p>Comparison of our 6 benchmarking algorithms (voted-ensemble system) used to decode the DNA of musical success.</p>
         </div>
         
         <div className={shouldAnimate ? 'animate-in delay-2' : ''} style={{ 
