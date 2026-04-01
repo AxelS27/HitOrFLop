@@ -3,18 +3,11 @@
 venv/
 **/venv/
 **/__pycache__/
+# Models and Large Files
 *.pkl
-*.dll
-*.exe
-*.so
-*.dylib
-.env
-.DS_Store
-dist/
-build/
-node_modules/
-website/frontend/dist/
-website/backend/venv/
-website/backend/__pycache__/
-model_training/venv/
-model_training/__pycache__/
+website/backend/models/
+deployment_hf/
+model-code/models/
+model_training/models/
+data/
+

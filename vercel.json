@@ -1,25 +1,21 @@
 {
   "version": 2,
-  "name": "music-hit-predictor",
   "builds": [
     {
-      "src": "package.json",
+      "src": "website/frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "website/frontend/dist" }
-    },
-    {
-      "src": "website/backend/main.py",
-      "use": "@vercel/python"
+      "config": {
+        "distDir": "dist"
+      }
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "website/backend/main.py"
+      "handle": "filesystem"
     },
     {
-      "source": "/(.*)",
-      "destination": "website/frontend/dist/$1"
+      "src": "/(.*)",
+      "dest": "/website/frontend/index.html"
     }
   ]
 }

@@ -1,0 +1,102 @@
+🏆 HASIL KONSENSUS THE BIG 5 MODEL (THRESHOLD: 15) 🏆
+======================================================================
+
+LAGU: Barasuara - Terbuang Dalam Waktu (Official Video).mp3
+----------------------------------------
+[RANDOMFOREST   ] 🔥 HIT 🔥    |  62.00%
+[ADABOOST       ] 🧊 FLOP 🧊   |  52.79%
+[KNN            ] 🔥 HIT 🔥    | 100.00%
+[DECISIONTREE   ] 🧊 FLOP 🧊   |  50.37%
+[XGBOOST        ] 🔥 HIT 🔥    |  86.98%
+
+🗳️ KESIMPULAN: 📈 POTENTIAL HIT (3/5 Model Setuju)
+======================================================================
+
+LAGU: Elvis Presley - Can't Help Falling in Love (Lyrics).mp3
+----------------------------------------
+[RANDOMFOREST   ] 🧊 FLOP 🧊   |  52.40%
+[ADABOOST       ] 🧊 FLOP 🧊   |  50.28%
+[KNN            ] 🧊 FLOP 🧊   | 100.00%
+[DECISIONTREE   ] 🧊 FLOP 🧊   |  50.37%
+[XGBOOST        ] 🧊 FLOP 🧊   |  51.80%
+
+🗳️ KESIMPULAN: 🧊 TOTAL FLOP (0/5 Model Sepakat)
+======================================================================
+
+LAGU: fats domino - blueberry hill.mp3
+----------------------------------------
+[RANDOMFOREST   ] 🔥 HIT 🔥    |  83.00%
+[ADABOOST       ] 🧊 FLOP 🧊   |  52.79%
+[KNN            ] 🔥 HIT 🔥    |  80.00%
+[DECISIONTREE   ] 🧊 FLOP 🧊   |  83.94%
+[XGBOOST        ] 🔥 HIT 🔥    |  72.92%
+
+🗳️ KESIMPULAN: 📈 POTENTIAL HIT (3/5 Model Setuju)
+======================================================================
+
+LAGU: FELIX IRWAN - TAK INGIN SENDIRI (AKU MASIH SEPERTI YANG DULU ) (OFFICIAL MUSIC VIDEO).mp3
+----------------------------------------
+[RANDOMFOREST   ] 🧊 FLOP 🧊   |  59.00%
+[ADABOOST       ] 🧊 FLOP 🧊   |  53.56%
+[KNN            ] 🧊 FLOP 🧊   |  60.00%
+[DECISIONTREE   ] 🧊 FLOP 🧊   |  68.04%
+[XGBOOST        ] 🔥 HIT 🔥    |  51.82%
+
+🗳️ KESIMPULAN: ⚖️ DISKUSI (1/5 Model Setuju - Berisiko)
+======================================================================
+
+LAGU: Frankie Valli - Can't Take My Eyes Off You (Official Audio).mp3
+----------------------------------------
+[RANDOMFOREST   ] 🧊 FLOP 🧊   |  63.00%
+[ADABOOST       ] 🧊 FLOP 🧊   |  51.43%
+[KNN            ] 🔥 HIT 🔥    |  60.00%
+[DECISIONTREE   ] 🧊 FLOP 🧊   |  68.04%
+[XGBOOST        ] 🔥 HIT 🔥    |  56.60%
+
+🗳️ KESIMPULAN: ⚖️ DISKUSI (2/5 Model Setuju - Berisiko)
+======================================================================
+
+LAGU: Hearts2Hearts 하츠투하츠 'Pretty Please' MV.mp3
+----------------------------------------
+[RANDOMFOREST   ] 🧊 FLOP 🧊   |  57.00%
+[ADABOOST       ] 🧊 FLOP 🧊   |  50.28%
+[KNN            ] 🧊 FLOP 🧊   | 100.00%
+[DECISIONTREE   ] 🧊 FLOP 🧊   |  50.37%
+[XGBOOST        ] 🔥 HIT 🔥    |  63.97%
+
+🗳️ KESIMPULAN: ⚖️ DISKUSI (1/5 Model Setuju - Berisiko)
+======================================================================
+
+LAGU: Hearts2Hearts 하츠투하츠 'RUDE!' MV.mp3
+----------------------------------------
+[RANDOMFOREST   ] 🧊 FLOP 🧊   |  61.00%
+[ADABOOST       ] 🧊 FLOP 🧊   |  53.56%
+[KNN            ] 🧊 FLOP 🧊   |  60.00%
+[DECISIONTREE   ] 🧊 FLOP 🧊   |  68.04%
+[XGBOOST        ] 🧊 FLOP 🧊   |  60.02%
+
+🗳️ KESIMPULAN: 🧊 TOTAL FLOP (0/5 Model Sepakat)
+======================================================================
+
+LAGU: If You Happy and You Know It Clap Your Hands Song with Lyrics.mp3
+----------------------------------------
+[RANDOMFOREST   ] 🧊 FLOP 🧊   |  61.00%
+[ADABOOST       ] 🧊 FLOP 🧊   |  51.06%
+[KNN            ] 🧊 FLOP 🧊   |  60.00%
+[DECISIONTREE   ] 🧊 FLOP 🧊   |  68.04%
+[XGBOOST        ] 🧊 FLOP 🧊   |  69.51%
+
+🗳️ KESIMPULAN: 🧊 TOTAL FLOP (0/5 Model Sepakat)
+======================================================================
+
+LAGU: 南姄 - 情非得已𝑸𝒊𝒏𝒈 𝑭𝒆𝒊 𝑫𝒆 𝒀𝒊Can't Help Falling In Love With You(抖音DJ女生版)最新最火DJ音乐2022 Lyrics Indonesia.mp3
+----------------------------------------
+[RANDOMFOREST   ] 🧊 FLOP 🧊   |  81.00%
+[ADABOOST       ] 🔥 HIT 🔥    |  54.16%
+[KNN            ] 🧊 FLOP 🧊   |  80.00%
+[DECISIONTREE   ] 🧊 FLOP 🧊   |  87.14%
+[XGBOOST        ] 🧊 FLOP 🧊   |  85.26%
+
+🗳️ KESIMPULAN: ⚖️ DISKUSI (1/5 Model Setuju - Berisiko)
+======================================================================
+

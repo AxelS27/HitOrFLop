@@ -18,14 +18,16 @@ const PredictorForm = ({ onStart, onResult }: any) => {
     }
 
     try {
-      const response = await fetch('/api/predict', {
+      const response = await fetch('https://axels27-music-hit-predictor-api.hf.space/predict', {
         method: 'POST',
-        body: formData
+        mode: 'cors',
+        body: formData,
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Prediction failed');
+        const errorText = await response.text();
+        console.error('Backend Error Response:', errorText);
+        throw new Error(`Backend Error (${response.status}): ${errorText.substring(0, 50)}...`);
       }
       
       const resultData = await response.json();

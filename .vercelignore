@@ -1,0 +1,9 @@
+# Ignore everything except frontend
+website/backend/
+deployment_hf/
+model_training/
+model-code/
+requirements.txt
+runtime.txt
+.python-version
+data/
