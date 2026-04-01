@@ -8,7 +8,7 @@ const ResultDisplay = ({ data, onReset }: any) => {
     : 'linear-gradient(135deg, #ff4444, #ff6b6b)';
 
   return (
-    <div className="analysis-card" style={{ maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.8s ease-out' }}>
+    <div className="analysis-card" style={{ maxWidth: '900px', margin: '0 auto', animation: 'fadeIn 0.8s ease-out', '--theme-color': themeColor } as React.CSSProperties}>
       <div className="glass-panel" style={{ padding: '3rem', borderTop: `4px solid ${themeColor}` }}>
         {/* Track Title Section */}
         <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
