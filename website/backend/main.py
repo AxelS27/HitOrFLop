@@ -45,7 +45,9 @@ def extract_real_features(file_path):
     Normalized to -14.0 LUFS for consistency.
     """
     try:
-        y, sr = librosa.load(file_path, sr=22050, mono=True)
+        # Only analyze the first 60s: enough for stable tempo/key/energy estimates,
+        # and avoids serverless timeouts on full-length tracks.
+        y, sr = librosa.load(file_path, sr=22050, mono=True, duration=60)
         
         try:
             meter = pyln.Meter(sr)
@@ -63,7 +65,9 @@ def extract_real_features(file_path):
         rms = librosa.feature.rms(y=y)
         features['loudness'] = -14.0 
 
-        chromagram = librosa.feature.chroma_cqt(y=y, sr=sr)
+        # chroma_stft (STFT-based) is much faster than chroma_cqt with near-equivalent
+        # key estimation via the Krumhansl profiles below.
+        chromagram = librosa.feature.chroma_stft(y=y, sr=sr)
         chroma_vals = np.sum(chromagram, axis=1)
         key_idx = np.argmax(chroma_vals)
         features['key'] = int(key_idx)

@@ -6,12 +6,12 @@ const ModelsPage = ({ sortKey, setSortKey, isFirstTime }: any) => {
   const [shouldAnimate] = useState(isFirstTime);
 
   const initialModels = [
-    { name: 'Multi Vote Model', accuracy: 84.50, f1: 89.20, precision: 86.4, recall: 92.1, status: 'Supreme' },
-    { name: 'XGBoost', accuracy: 81.30, f1: 86.10, precision: 83.2, recall: 89.4, status: 'Winner' },
-    { name: 'AdaBoost', accuracy: 78.40, f1: 83.50, precision: 80.5, recall: 86.8, status: 'Stable' },
-    { name: 'KNN', accuracy: 76.20, f1: 81.00, precision: 78.1, recall: 84.2, status: 'Standard' },
-    { name: 'Decision Tree', accuracy: 72.10, f1: 78.40, precision: 75.4, recall: 81.6, status: 'Classic' },
-    { name: 'Random Forest', accuracy: 70.40, f1: 76.90, precision: 73.8, recall: 80.2, status: 'Baseline' }
+    { name: 'Random Forest', accuracy: 78.94, f1: 79.71, precision: 76.91, recall: 82.73, status: 'Top Model' },
+    { name: 'Multi Vote Model', accuracy: 71.70, f1: 72.11, precision: 71.07, recall: 73.19, status: 'Consensus' },
+    { name: 'KNN', accuracy: 68.84, f1: 68.07, precision: 69.79, recall: 66.44, status: 'Balanced' },
+    { name: 'XGBoost', accuracy: 68.76, f1: 69.38, precision: 68.04, recall: 70.77, status: 'Strong' },
+    { name: 'Decision Tree', accuracy: 62.26, f1: 62.89, precision: 61.86, recall: 63.96, status: 'Classic' },
+    { name: 'AdaBoost', accuracy: 55.88, f1: 56.88, precision: 55.62, recall: 58.20, status: 'Weakest' }
   ];
 
   /* --- DATA SORTING LOGIC --- */
@@ -33,6 +33,9 @@ const ModelsPage = ({ sortKey, setSortKey, isFirstTime }: any) => {
     return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
   });
 
+  // Highlight the best-performing model (highest accuracy), not a hardcoded one.
+  const topModel = [...initialModels].sort((a, b) => b.accuracy - a.accuracy)[0].name;
+
   return (
     <section className={`hero ${shouldAnimate ? 'animate-in' : ''}`} style={{ 
       minHeight: '100vh', height: 'auto', padding: '140px 0 100px', display: 'flex', flexDirection: 'column' 
@@ -43,7 +46,7 @@ const ModelsPage = ({ sortKey, setSortKey, isFirstTime }: any) => {
         <div className={shouldAnimate ? 'animate-in' : ''} style={{ textAlign: 'center', marginBottom: '5rem' }}>
           <h1 style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>Model <span>Precision</span></h1>
           <p style={{ margin: '0 auto', opacity: 0.7, fontSize: '1rem', maxWidth: '750px', lineHeight: '1.8' }}>
-            Benchmarking our optimized ensemble intelligence against 52,616 balanced samples. 
+            Benchmarking our optimized ensemble intelligence against 50,768 balanced samples.
             Utilizing a low-bias popularity threshold optimized to detect emerging independent hits and local chart-toppers.
           </p>
         </div>
@@ -73,18 +76,18 @@ const ModelsPage = ({ sortKey, setSortKey, isFirstTime }: any) => {
                 {sortedModels.map((model: any, idx: number) => (
                   <tr key={model.name} className="perf-row" style={{ 
                     borderBottom: '1px solid rgba(255,255,255,0.03)',
-                    background: model.name.includes('Multi') ? 'rgba(255,255,255,0.02)' : 'transparent'
+                    background: model.name === topModel ? 'rgba(255,255,255,0.02)' : 'transparent'
                   }}>
                     <td style={{ padding: '1.1rem 1.8rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <span style={{ fontSize: '0.75rem', opacity: 0.2 }}>{idx + 1}</span>
-                        <strong style={{ fontSize: '1rem', color: model.name.includes('Multi') ? 'var(--theme-color)' : 'white' }}>{model.name}</strong>
+                        <strong style={{ fontSize: '1rem', color: model.name === topModel ? 'var(--theme-color)' : 'white' }}>{model.name}</strong>
                       </div>
                     </td>
                     <td style={{ textAlign: 'center', fontSize: '1rem', fontWeight: 600 }}>{(model.accuracy / 100).toFixed(3)}</td>
                     <td style={{ textAlign: 'center', fontSize: '1rem', opacity: 0.6 }}>{(model.f1 / 100).toFixed(3)}</td>
                     <td style={{ padding: '1.1rem 1.8rem', textAlign: 'right' }}>
-                      <span className="status-tag" style={{ border: model.name.includes('Multi') ? '1px solid var(--theme-color)' : '1px solid rgba(255,255,255,0.1)' }}>
+                      <span className="status-tag" style={{ border: model.name === topModel ? '1px solid var(--theme-color)' : '1px solid rgba(255,255,255,0.1)' }}>
                         {model.status}
                       </span>
                     </td>
@@ -108,15 +111,15 @@ const ModelsPage = ({ sortKey, setSortKey, isFirstTime }: any) => {
                   <div key={`chart-${model.name}`}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
                       <span style={{ fontWeight: 600, opacity: 0.8 }}>{model.name}</span>
-                      <span style={{ color: model.name.includes('Multi') ? 'var(--theme-color)' : 'white', fontWeight: 900 }}>{model.accuracy}%</span>
+                      <span style={{ color: model.name === topModel ? 'var(--theme-color)' : 'white', fontWeight: 900 }}>{model.accuracy}%</span>
                     </div>
                     <div style={{ height: '5px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div 
                         style={{ 
                           width: `${model.accuracy}%`, height: '100%', 
-                          background: model.name.includes('Multi') ? 'var(--theme-color)' : 'rgba(255,255,255,0.2)',
+                          background: model.name === topModel ? 'var(--theme-color)' : 'rgba(255,255,255,0.2)',
                           borderRadius: '3px', transition: 'width 2s cubic-bezier(0,0.8,0.2,1)',
-                          boxShadow: model.name.includes('Multi') ? '0 0 15px var(--theme-color-faded)' : 'none'
+                          boxShadow: model.name === topModel ? '0 0 15px var(--theme-color-faded)' : 'none'
                         }}
                       />
                     </div>
@@ -136,19 +139,19 @@ const ModelsPage = ({ sortKey, setSortKey, isFirstTime }: any) => {
                   <circle 
                     cx="50" cy="50" r="45" fill="none" 
                     stroke="var(--theme-color)" strokeWidth="4" strokeDasharray="282.7"
-                    strokeDashoffset={282.7 * (1 - 0.845)} strokeLinecap="round"
+                    strokeDashoffset={282.7 * (1 - 0.797)} strokeLinecap="round"
                     style={{ transition: 'stroke-dashoffset 2.5s ease-out' }}
                   />
                 </svg>
                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '2.1rem', fontWeight: 900, lineHeight: 1 }}>.845</div>
+                  <div style={{ fontSize: '2.1rem', fontWeight: 900, lineHeight: 1 }}>.797</div>
                   <div style={{ fontSize: '0.6rem', letterSpacing: '1.5px', opacity: 0.5, marginTop: '3px' }}>F1 SCORE</div>
                 </div>
               </div>
               <div>
                 <h4 style={{ fontSize: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'white', marginBottom: '0.8rem' }}>Data Reliability</h4>
                 <p style={{ fontSize: '0.8rem', opacity: 0.5, margin: 0, lineHeight: 1.6 }}>
-                  Our analytics suite ensures consistent audio metric interpretation across 52,616 balanced diverse samples. 
+                  Our analytics suite ensures consistent audio metric interpretation across 50,768 balanced diverse samples.
                   Minimizing variance through ensemble voting.
                 </p>
               </div>

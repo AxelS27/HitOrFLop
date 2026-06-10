@@ -17,13 +17,19 @@ const PredictorForm = ({ onStart, onResult }: any) => {
       formData.append('youtube_url', youtubeUrl);
     }
 
+    // Abort if the backend (HF Space) is asleep/too slow, so the UI never hangs forever.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120s
+
     try {
       const response = await fetch('https://axels27-music-hit-predictor-api.hf.space/predict', {
         method: 'POST',
         mode: 'cors',
         body: formData,
+        signal: controller.signal,
       });
-      
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Backend Error Response:', errorText);
@@ -33,8 +39,12 @@ const PredictorForm = ({ onStart, onResult }: any) => {
       const resultData = await response.json();
       onResult(resultData);
     } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error(err);
-      alert(`Backend Error: ${err.message}\n\nFalling back to Demo Mode for visualization.`);
+      const msg = err.name === 'AbortError'
+        ? 'Server took too long to respond (the analysis engine may be waking up). Please try again in a moment.'
+        : err.message;
+      alert(`Backend Error: ${msg}\n\nFalling back to Demo Mode for visualization.`);
       
       onResult({
         isHit: true,
