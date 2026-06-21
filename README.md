@@ -46,7 +46,7 @@ jupyter notebook model-code/MusicPredictor_Pipeline.ipynb
 ## 🚀 Key Features
 
 *   **Multi-Input Ingestion**: Process local `.mp3`/`.wav` files or analyze any YouTube track directly via URL.
-*   **Ensemble Voting Consensus**: Predictions are powered by the combined intelligence of 5 distinct models, ensuring high reliability (84.5% Baseline Accuracy).
+*   **Ensemble Voting Consensus**: Predictions are powered by the combined intelligence of 5 distinct models, ensuring high reliability (78.94% Random Forest Accuracy / 71.7% Ensemble Consensus).
 *   **Spectral DNA Visualization**: A real-time, interactive dashboard that visualizes track energy, tempo, and loudness "fingerprints."
 *   **Emerging Track Optimization**: Popularity threshold set at **15** to specifically capture rising indie and regional hits.
 
@@ -93,7 +93,7 @@ To eliminate majority-class bias (where a model might simply guess the more comm
 | Stage | Hits (Pop ≥ 15) | Flops (Pop < 15) | Total Samples |
 |---|---|---|---|
 | Initial Collection | 87,692 | 26,308 | 114,000 |
-| **Balanced Training Set** | **26,308** | **26,308** | **52,616** |
+| **Balanced Cleaned Dataset** | **25,384** | **25,384** | **50,768** |
 
 ### **4. Evaluation Integrity**
 We utilized a **Stratified 80/20 Train-Test Split**. This ensures that the 50:50 class balance is perfectly preserved in both the training phase and the validation phase, preventing accidental sampling bias during performance evaluation.
@@ -105,6 +105,18 @@ We utilize a **Voting Consensus Mechanism** to minimize variance and increase pr
 3.  **AdaBoost**: Iteratively focuses on difficult-to-classify samples.
 4.  **K-Nearest Neighbors (KNN)**: Relies on local structural similarities.
 5.  **DecisionTree**: Provides the foundational logical framework.
+
+### **6. Benchmark Analytics**
+Below are the training performance results across 50,768 balanced diverse samples:
+
+| Rank | Model | Accuracy | F1-Score | Status / Consensus Role |
+|:---:|---|:---:|:---:|---|
+| 1 | **Random Forest** | **78.94%** | **0.797** | **Top Model (Best Single Performance)** |
+| 2 | **Multi-Vote Model (Ensemble)** | **71.70%** | **0.721** | **Consensus Decision (Reduced False Positives)** |
+| 3 | **K-Nearest Neighbors (KNN)** | **68.84%** | **0.681** | **Balanced Classifier** |
+| 4 | **XGBoost** | **68.76%** | **0.694** | **Strong Classifier** |
+| 5 | **Decision Tree** | **62.26%** | **0.629** | **Classic Classifier** |
+| 6 | **AdaBoost** | **55.88%** | **0.569** | **Weakest Classifier** |
 
 ## 🏁 Technical Execution
 
