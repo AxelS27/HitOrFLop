@@ -12,23 +12,21 @@ import os
 
 def main():
     print("🚀 Training Big 5 Ensemble (Threshold=15)...")
-    dataset_path = os.path.join(os.path.dirname(__file__), "..", "data", "dataset.csv")
-    
-    if not os.path.exists(dataset_path):
-        print(f"❌ Error: {dataset_path} not found!")
+    if not os.path.exists('dataset.csv'):
+        print("❌ Error: dataset.csv not found!")
         return
         
-    df = pd.read_csv(dataset_path)
+    df = pd.read_csv('dataset.csv')
     features = ['tempo', 'loudness', 'key', 'mode', 'energy']
     
-    # --- DATA PREPROCESSING & CLEANING ---
+    # 1. Preprocessing
     df = df.dropna(subset=features + ['popularity'])
     df = df[df['energy'] > 0.1]
     
     THRESHOLD = 15
     df['is_hit'] = (df['popularity'] >= THRESHOLD).astype(int)
     
-    # --- CLASS BALANCING & RESAMPLING ---
+    # 2. Resampling (Balanced Classes)
     df_hits = df[df['is_hit'] == 1]
     df_flops = df[df['is_hit'] == 0]
     min_samples = min(len(df_hits), len(df_flops))
@@ -42,32 +40,37 @@ def main():
     y = df_balanced['is_hit']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
     
-    # --- FEATURE ENGINEERING & SCALING ---
+    # 3. Scaling
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
     joblib.dump(scaler, 'feature_scaler.pkl')
 
-    # --- MODEL TRAINING PIPELINE ---
+    # 4. Model Training
     models_def = {
         "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1),
         "AdaBoost": AdaBoostClassifier(n_estimators=100, random_state=42), 
         "KNN": KNeighborsClassifier(n_neighbors=5, n_jobs=-1),
         "DecisionTree": DecisionTreeClassifier(max_depth=10, random_state=42),
-        "XGBoost": XGBClassifier(tree_method='hist', device='cpu', random_state=42)
+        "XGBoost": XGBClassifier(tree_method='hist', device='cuda', random_state=42)
     }
 
-    models_dir = os.path.join(os.path.dirname(__file__), "..", "models")
-    if not os.path.exists(models_dir): os.makedirs(models_dir)
+    if not os.path.exists('models'): os.makedirs('models')
 
     for name, model in models_def.items():
-        print(f"🧠 Training: {name}...")
-        model.fit(X_train_scaled, y_train)
+        print(f"🧠 Learning: {name}...")
+        if name == "XGBoost":
+            try:
+                model.fit(X_train_scaled, y_train)
+            except:
+                model.set_params(device='cpu')
+                model.fit(X_train_scaled, y_train)
+        else:
+            model.fit(X_train_scaled, y_train)
         
         y_pred = model.predict(X_test_scaled)
-        print(f"✅ {name} Validation Accuracy: {accuracy_score(y_test, y_pred):.4f}")
-        model_export_path = os.path.join(models_dir, f"{name.lower()}_model.pkl")
-        joblib.dump(model, model_export_path)
+        print(f"✅ {name} Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+        joblib.dump(model, f'models/{name.lower()}_model.pkl')
 
     print("\n🏆 Training Completed.")
 

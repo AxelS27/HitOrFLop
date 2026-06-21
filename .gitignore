@@ -9,5 +9,6 @@ website/backend/models/
 deployment_hf/
 model-code/models/
 model_training/models/
+model-code/data/
 data/
 

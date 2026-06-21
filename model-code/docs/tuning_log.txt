@@ -1,0 +1,48 @@
+Loading & preprocessing...
+  baseline: RandomForest
+  baseline: AdaBoost
+  baseline: KNN
+  baseline: DecisionTree
+  baseline: XGBoost
+
+>>> Tuning RandomForest  (n_iter=25, cv=5)
+Fitting 5 folds for each of 25 candidates, totalling 125 fits
+  best CV-F1: 0.7845  | took 276.6s
+  best params: {'n_estimators': 300, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt', 'max_depth': None}
+
+>>> Tuning AdaBoost  (n_iter=20, cv=5)
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+  best CV-F1: 0.5604  | took 51.9s
+  best params: {'n_estimators': 200, 'learning_rate': 1.0}
+
+>>> Tuning KNN  (n_iter=20, cv=5)
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+  best CV-F1: 0.7061  | took 5.4s
+  best params: {'weights': 'distance', 'p': 2, 'n_neighbors': 3}
+
+>>> Tuning DecisionTree  (n_iter=25, cv=5)
+Fitting 5 folds for each of 25 candidates, totalling 125 fits
+  best CV-F1: 0.6815  | took 2.2s
+  best params: {'min_samples_split': 5, 'min_samples_leaf': 1, 'max_depth': 24, 'criterion': 'entropy'}
+
+>>> Tuning XGBoost  (n_iter=30, cv=5)
+Fitting 5 folds for each of 30 candidates, totalling 150 fits
+  best CV-F1: 0.7563  | took 85.6s
+  best params: {'subsample': 0.85, 'reg_lambda': 0.5, 'n_estimators': 600, 'max_depth': 12, 'learning_rate': 0.05, 'colsample_bytree': 1.0}
+
+=== Tuning Results ===
+       Model   Stage  Accuracy  Precision   Recall       F1                                                                                                                   BestParams    CV_F1  TuneTimeSec
+RandomForest Default  0.789443   0.769090 0.827260 0.797115                                                                                                                      default      NaN          NaN
+    AdaBoost Default  0.558795   0.556183 0.582037 0.568816                                                                                                                      default      NaN          NaN
+         KNN Default  0.688399   0.697910 0.664369 0.680727                                                                                                                      default      NaN          NaN
+DecisionTree Default  0.622612   0.618594 0.639551 0.628898                                                                                                                      default      NaN          NaN
+     XGBoost Default  0.687512   0.679690 0.709277 0.694169                                                                                                                      default      NaN          NaN
+RandomForest   Tuned  0.793973   0.769843 0.838684 0.802790              {"n_estimators": 300, "min_samples_split": 5, "min_samples_leaf": 1, "max_features": "sqrt", "max_depth": null} 0.784486        276.6
+    AdaBoost   Tuned  0.562241   0.564860 0.542052 0.553221                                                                                  {"n_estimators": 200, "learning_rate": 1.0} 0.560367         51.9
+         KNN   Tuned  0.738822   0.762958 0.692929 0.726259                                                                            {"weights": "distance", "p": 2, "n_neighbors": 3} 0.706130          5.4
+DecisionTree   Tuned  0.710754   0.726120 0.676778 0.700581                                     {"min_samples_split": 5, "min_samples_leaf": 1, "max_depth": 24, "criterion": "entropy"} 0.681484          2.2
+     XGBoost   Tuned  0.768367   0.760965 0.782549 0.771606 {"subsample": 0.85, "reg_lambda": 0.5, "n_estimators": 600, "max_depth": 12, "learning_rate": 0.05, "colsample_bytree": 1.0} 0.756319         85.6
+saved: tuning_01_before_after.png
+saved: tuning_02_improvement.png
+
+Done. Tuned models saved to: D:\Binus-Projects\MachineLearning\model-code\models\tuned
